@@ -1,0 +1,32 @@
+services:
+  server:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.${ENVIRONMENT}
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres
+    env_file:
+      - .env.${ENVIRONMENT}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+volumes:
+  server-data:
+  postgres-data:
+
+networks:
+  app-network:
+    driver: bridge
