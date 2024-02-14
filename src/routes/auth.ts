@@ -1,16 +1,23 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
-import { validationResult } from 'express-validator';
 
-import { signupValidator } from '~/validator';
+import { signupSchema } from '~/validator';
 import authenticate from '~/middleware/authenticate';
 import pool from '~/utils/db';
 
 const authRouter = express.Router();
 const secretKey = process.env.SECRET_KEY!;
 
-authRouter.post('/signup', signupValidator, async (req: {
+const validateSignup = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = signupSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({ errors: error.details });
+  }
+  next();
+};
+
+authRouter.post('/signup', validateSignup, async (req: {
   body: {
     username: string,
     email?: string,
@@ -18,10 +25,6 @@ authRouter.post('/signup', signupValidator, async (req: {
     password: string,
   }
 }, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
   const { username, email, phone_number, password } = req.body;
   
   try {
