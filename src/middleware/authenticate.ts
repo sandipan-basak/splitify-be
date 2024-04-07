@@ -1,11 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { signupSchema } from '~/validator';
 
-const secretKey = process.env.SECRET_KEY!;
+const secretKey = process.env.SECRET_KEY ?? 'secret_key';
 
-const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction): any => {
   const cookieHeader = req.headers.cookie;
-  const cookies: { [key: string]: string } = {};
+  const cookies: Record<string, string> = {};
 
   cookieHeader?.split(';').forEach(cookie => {
     const [name, value] = cookie.split('=').map(c => c.trim());
@@ -13,13 +14,19 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
   });
   const token = cookies.sid;
 
-  if (!token) return res.sendStatus(401);
+  if (token == null && token === '') return res.sendStatus(401);
 
   jwt.verify(token, secretKey, (err, user) => {
-    if (err) return res.sendStatus(403);
+    if (err != null) return res.sendStatus(403);
     req.user = user;
     next();
   });
 };
 
-export default authenticate;
+export const validateSignup = (req: Request, res: Response, next: NextFunction): any => {
+  const { error } = signupSchema.validate(req.body, { abortEarly: false });
+  if (error != null) {
+    return res.status(400).json({ errors: error.details });
+  }
+  next();
+};

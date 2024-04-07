@@ -14,6 +14,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRouter);
+// app.use('/expense', expenseRouter);
 
 app.listen(port, () => {
     console.log(`App listening on port http://localhost:${port}`)

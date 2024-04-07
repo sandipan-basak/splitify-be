@@ -1,9 +1,10 @@
-import { Request } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { Request } from 'express';
 
 declare global {
   namespace Express {
     interface Request {
-      user?: any; // Adjust as needed for your use case
+      user?: any
     }
   }
 }
